@@ -1,676 +1,634 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: 'Arial', 'Helvetica', sans-serif;
-      background: #ffffff; /* BRANCO */
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      position: relative;
-      overflow-x: hidden;
-    }
-    
-    /* Símbolos de quiz flutuantes no fundo */
-    .floating-symbols {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-    
-    .symbol {
-      position: absolute;
-      font-size: 40px;
-      color: #4169E1; /* Azul real para combinar */
-      opacity: 0.15;
-      animation: float 15s infinite linear;
-      text-shadow: 0 0 10px rgba(65, 105, 225, 0.3);
-    }
-    
-    /* Diferentes símbolos */
-    .symbol:nth-child(1) { top: 10%; left: 5%; animation-duration: 18s; font-size: 60px; content: "🇬🇧"; }
-    .symbol:nth-child(2) { top: 70%; left: 90%; animation-duration: 22s; font-size: 50px; content: "🇺🇸"; animation-delay: -2s; }
-    .symbol:nth-child(3) { top: 30%; left: 85%; animation-duration: 20s; font-size: 70px; content: "🔤"; animation-delay: -5s; }
-    .symbol:nth-child(4) { top: 80%; left: 15%; animation-duration: 25s; font-size: 45px; content: "📚"; animation-delay: -8s; }
-    .symbol:nth-child(5) { top: 20%; left: 40%; animation-duration: 30s; font-size: 55px; content: "🗣️"; animation-delay: -12s; }
-    .symbol:nth-child(6) { top: 60%; left: 30%; animation-duration: 17s; font-size: 65px; content: "✍️"; animation-delay: -3s; }
-    .symbol:nth-child(7) { top: 40%; left: 60%; animation-duration: 28s; font-size: 50px; content: "📖"; animation-delay: -7s; }
-    .symbol:nth-child(8) { top: 15%; left: 75%; animation-duration: 19s; font-size: 80px; content: "🎓"; animation-delay: -10s; }
-    .symbol:nth-child(9) { top: 85%; left: 45%; animation-duration: 24s; font-size: 45px; content: "💬"; animation-delay: -15s; }
-    .symbol:nth-child(10) { top: 45%; left: 15%; animation-duration: 21s; font-size: 90px; content: "❓"; animation-delay: -4s; }
-    
-    @keyframes float {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      25% { transform: translate(30px, 30px) rotate(15deg); }
-      50% { transform: translate(60px, 0) rotate(0deg); }
-      75% { transform: translate(30px, -30px) rotate(-15deg); }
-      100% { transform: translate(0, 0) rotate(0deg); }
-    }
-    
-    .quiz-container {
-      width: 100%;
-      max-width: 450px;
-      background: #4169E1; /* AZUL REAL */
-      border-radius: 25px;
-      padding: 20px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      border: 2px solid #ffd700; /* AMARELO */
-      position: relative;
-      z-index: 2;
-    }
-    
-    /* Header */
-    .quiz-header {
-      margin-bottom: 25px;
-      text-align: center;
-    }
-    
-    .quiz-title {
-      color: #ffffff;
-      font-size: 48px;
-      font-weight: bold;
-      letter-spacing: 2px;
-      text-shadow: 2px 2px 0 #000000;
-      line-height: 1;
-    }
-    
-    .level-indicator {
-      background: #ffffff;
-      color: #4169E1; /* Azul */
-      font-size: 18px;
-      font-weight: bold;
-      padding: 5px 15px;
-      border-radius: 50px;
-      display: inline-block;
-      margin-top: 10px;
-      border: 2px solid #ffd700;
-    }
-    
-    /* Área da pergunta */
-    .question-area {
-      background: #ffffff;
-      border-radius: 15px;
-      padding: 25px 15px;
-      margin-bottom: 25px;
-      border: 2px solid #ffd700;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .question-text {
-      color: #000000;
-      font-size: 22px;
-      font-weight: 600;
-      text-align: center;
-      line-height: 1.4;
-    }
-    
-    /* Opções */
-    .options-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 25px;
-    }
-    
-    .option-btn {
-      background: #ffffff;
-      border: 2px solid #ffd700;
-      border-radius: 15px;
-      padding: 18px 15px;
-      color: #000000;
-      font-size: 18px;
-      font-weight: 500;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      width: 100%;
-      display: block;
-      box-shadow: 0 4px 0 #cccccc;
-    }
-    
-    .option-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #cccccc;
-    }
-    
-    .option-btn.selected {
-      background: #e0e0e0;
-      border-color: #ffd700;
-      box-shadow: 0 4px 0 #b0b0b0;
-    }
-    
-    .option-btn.correct {
-      background: #4CAF50;
-      border-color: #ffd700;
-      color: #ffffff;
-      box-shadow: 0 4px 0 #2d6a2d;
-    }
-    
-    .option-btn.incorrect {
-      background: #f44336;
-      border-color: #ffd700;
-      color: #ffffff;
-      box-shadow: 0 4px 0 #9a2828;
-    }
-    
-    .option-btn:disabled {
-      opacity: 0.9;
-      cursor: default;
-      transform: none;
-    }
-    
-    .option-prefix {
-      display: inline-block;
-      width: 35px;
-      height: 35px;
-      background: #f5f5f5;
-      color: #000000;
-      border-radius: 10px;
-      text-align: center;
-      line-height: 35px;
-      font-size: 20px;
-      font-weight: bold;
-      margin-right: 15px;
-      border: 1px solid #ffd700;
-    }
-    
-    /* Timer */
-    .timer-container {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    
-    .timer {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      font-size: 32px;
-      font-weight: bold;
-      padding: 10px 25px;
-      border-radius: 50px;
-      border: 2px solid #ffd700;
-      box-shadow: 0 4px 0 #cccccc;
-    }
-    
-    /* Loading */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      display: none;
-    }
-    
-    .loading-content {
-      background: #f5f5f5;
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      border: 2px solid #ffd700;
-    }
-    
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #e0e0e0;
-      border-top-color: #4169E1; /* Azul */
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* Resultados */
-    .result-screen {
-      text-align: center;
-    }
-    
-    .final-score {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 30px;
-      margin: 20px 0;
-      border: 2px solid #ffd700;
-    }
-    
-    .score-number {
-      font-size: 80px;
-      font-weight: bold;
-      color: #4169E1; /* Azul */
-      line-height: 1;
-      margin: 10px 0;
-    }
-    
-    .score-label {
-      color: #000000;
-      font-size: 24px;
-    }
-    
-    .level-result {
-      font-size: 24px;
-      color: #000000;
-      margin: 15px 0;
-      padding: 10px;
-      background: #f5f5f5;
-      border-radius: 50px;
-    }
-    
-    .action-btn {
-      background: #ffffff;
-      border: none;
-      border-radius: 15px;
-      padding: 18px;
-      color: #000000;
-      font-size: 22px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      margin: 10px 0;
-      box-shadow: 0 4px 0 #cccccc;
-      border: 2px solid #ffd700;
-    }
-    
-    .action-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #cccccc;
-    }
-    
-    .action-btn.secondary {
-      background: #e0e0e0;
-    }
-    
-    .name-input {
-      width: 100%;
-      padding: 15px;
-      font-size: 18px;
-      border-radius: 15px;
-      border: 2px solid #ffd700;
-      background: #ffffff;
-      margin: 10px 0;
-    }
-    
-    @media (max-width: 400px) {
-      .quiz-title { font-size: 42px; }
-      .question-text { font-size: 20px; }
-      .option-btn { font-size: 16px; padding: 15px; }
-      .symbol { font-size: 30px !important; }
-    }
-  </style>
-  
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>English Quiz - Test Your Level</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        .quiz-container {
+            width: 100%;
+            max-width: 550px;
+            background: #ffffff;
+            border-radius: 30px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .quiz-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .quiz-title {
+            color: #2c3e50;
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .level-indicator {
+            background: #3498db;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 8px 25px;
+            border-radius: 50px;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(52,152,219,0.3);
+        }
+        
+        .timer-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .timer {
+            display: inline-block;
+            background: #2c3e50;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 60px;
+            box-shadow: 0 4px 15px rgba(44,62,80,0.3);
+        }
+        
+        .question-area {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        
+        .question-text {
+            color: #2c3e50;
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .option-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 18px 20px;
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .option-btn:hover:not(:disabled) {
+            background: #f0f7ff;
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52,152,219,0.15);
+        }
+        
+        .option-btn.selected {
+            background: #e3f2fd;
+            border-color: #3498db;
+            box-shadow: 0 4px 0 #2980b9;
+        }
+        
+        .option-btn.correct {
+            background: #4CAF50;
+            border-color: #45a049;
+            color: white;
+            box-shadow: 0 4px 0 #2d6a2d;
+        }
+        
+        .option-btn.incorrect {
+            background: #f44336;
+            border-color: #d32f2f;
+            color: white;
+            box-shadow: 0 4px 0 #9a2828;
+        }
+        
+        .option-btn:disabled {
+            opacity: 0.9;
+            cursor: default;
+            transform: none;
+        }
+        
+        .option-prefix {
+            display: inline-block;
+            width: 35px;
+            height: 35px;
+            background: #3498db;
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 35px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #f0f0f0;
+            border-top-color: #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-screen {
+            text-align: center;
+        }
+        
+        .final-score {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            border-radius: 25px;
+            padding: 35px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .score-number {
+            font-size: 90px;
+            font-weight: bold;
+            line-height: 1;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .score-label {
+            font-size: 28px;
+            opacity: 0.9;
+        }
+        
+        .level-result {
+            font-size: 26px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 60px;
+        }
+        
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            padding: 18px;
+            color: #2c3e50;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin: 12px 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52,152,219,0.3);
+            border-color: #3498db;
+        }
+        
+        .action-btn.secondary {
+            background: #f8f9fa;
+        }
+        
+        .name-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+            margin: 10px 0;
+            transition: all 0.2s ease;
+        }
+        
+        .name-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.2);
+        }
+        
+        @media (max-width: 480px) {
+            .quiz-title { font-size: 36px; }
+            .question-text { font-size: 20px; }
+            .option-btn { font-size: 16px; padding: 15px; }
+            .score-number { font-size: 70px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="floating-symbols">
-    <div class="symbol">🇬🇧</div><div class="symbol">🇺🇸</div><div class="symbol">🔤</div>
-    <div class="symbol">📚</div><div class="symbol">🗣️</div><div class="symbol">✍️</div>
-    <div class="symbol">📖</div><div class="symbol">🎓</div><div class="symbol">💬</div>
-    <div class="symbol">❓</div>
-  </div>
-
-  <div class="quiz-container">
-    <div id="quizContent"></div>
-  </div>
-  
-  <div id="loading" class="loading-overlay">
-    <div class="loading-content">
-      <div class="loading-spinner"></div>
-      <div>Carregando...</div>
+    <div class="quiz-container">
+        <div id="quizContent"></div>
     </div>
-  </div>
 
-  <script>
-    // Links (você pode alterar conforme necessário)
-    const shopeeLink = "https://s.shopee.com.br/70DpcjasH2";
-    const resultadosLink = "https://s.shopee.com.br/70DpcjasH2";
+    <div id="loading" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div style="font-size: 20px; color: #2c3e50;">Carregando...</div>
+        </div>
+    </div>
 
-    // ===== 20 PERGUNTAS DE INGLÊS =====
-    // Básico (1-7), Intermediário (8-14), Avançado (15-20)
-    const questions = [
-      // BÁSICO (7 perguntas)
-      {
-        question: "🇬🇧 What is the correct answer? 'She ___ to school every day.'",
-        options: ["go", "goes", "going", "went"],
-        answer: 2,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 Choose the correct article: '___ apple a day keeps the doctor away.'",
-        options: ["A", "An", "The", "None"],
-        answer: 2,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 What's the past of 'eat'?",
-        options: ["eated", "ate", "eaten", "eat"],
-        answer: 2,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 Complete: 'I ___ a student.'",
-        options: ["is", "are", "am", "be"],
-        answer: 3,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 What's the opposite of 'hot'?",
-        options: ["warm", "cold", "cool", "chilly"],
-        answer: 2,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 Choose: 'They ___ playing football now.'",
-        options: ["is", "am", "are", "be"],
-        answer: 3,
-        level: "Básico"
-      },
-      {
-        question: "🇬🇧 What's this? '___' (book)",
-        options: ["It's a book", "This are a book", "These is book", "It book"],
-        answer: 1,
-        level: "Básico"
-      },
-      
-      // INTERMEDIÁRIO (7 perguntas)
-      {
-        question: "🇬🇧 If I ___ you, I would study more.",
-        options: ["was", "were", "am", "is"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 She's been working here ___ 2010.",
-        options: ["for", "since", "from", "ago"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 By the time we arrived, they ___ dinner.",
-        options: ["already had", "had already had", "have already had", "already have"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 I wish I ___ taller.",
-        options: ["was", "were", "am", "is"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 The movie ___ by Spielberg.",
-        options: ["directed", "was directed", "directs", "is direct"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 She suggested ___ to the cinema.",
-        options: ["to go", "going", "go", "went"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      {
-        question: "🇬🇧 If he had studied, he ___ the test.",
-        options: ["would pass", "would have passed", "will pass", "passed"],
-        answer: 2,
-        level: "Intermediário"
-      },
-      
-      // AVANÇADO (6 perguntas)
-      {
-        question: "🇬🇧 Never before ___ such a beautiful sunset.",
-        options: ["I have seen", "have I seen", "I saw", "did I see"],
-        answer: 2,
-        level: "Avançado"
-      },
-      {
-        question: "🇬🇧 Had I known, I ___ differently.",
-        options: ["would have acted", "would act", "will act", "acted"],
-        answer: 1,
-        level: "Avançado"
-      },
-      {
-        question: "🇬🇧 Not only ___ late, but she also forgot the documents.",
-        options: ["she arrived", "did she arrive", "arrived she", "she did arrive"],
-        answer: 2,
-        level: "Avançado"
-      },
-      {
-        question: "🇬🇧 The committee ___ in disagreement for weeks.",
-        options: ["has been", "have been", "is being", "are being"],
-        answer: 1,
-        level: "Avançado"
-      },
-      {
-        question: "🇬🇧 Were she to arrive early, we ___ the meeting.",
-        options: ["would start", "will start", "would have started", "start"],
-        answer: 1,
-        level: "Avançado"
-      },
-      {
-        question: "🇬🇧 Her writing is comparable ___ that of a professional author.",
-        options: ["with", "to", "as", "like"],
-        answer: 2,
-        level: "Avançado"
-      }
-    ];
+    <script>
+        // CONFIGURE AQUI OS LINKS DE REDIRECIONAMENTO
+        const SHOPEE_LINK = "https://s.shopee.com.br/70DpcjasH2"; // Link para "FAZER OUTRA ETAPA"
+        const RESULTADOS_LINK = "https://s.shopee.com.br/70DpcjasH2"; // Link para "VER RESULTADOS"
 
-    let current = 0;
-    let score = 0;
-    let answered = false;
-    let userAnswers = [];
-    let timer;
-    let timeLeft = 45;
+        // ===== 20 PERGUNTAS DE INGLÊS =====
+        const questions = [
+            // BÁSICO (1-7)
+            {
+                question: "🇬🇧 What is the correct answer? 'She ___ to school every day.'",
+                options: ["go", "goes", "going", "went"],
+                answer: 2,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 Choose the correct article: '___ apple a day keeps the doctor away.'",
+                options: ["A", "An", "The", "None"],
+                answer: 2,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 What's the past of 'eat'?",
+                options: ["eated", "ate", "eaten", "eat"],
+                answer: 2,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 Complete: 'I ___ a student.'",
+                options: ["is", "are", "am", "be"],
+                answer: 3,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 What's the opposite of 'hot'?",
+                options: ["warm", "cold", "cool", "chilly"],
+                answer: 2,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 Choose: 'They ___ playing football now.'",
+                options: ["is", "am", "are", "be"],
+                answer: 3,
+                level: "Básico"
+            },
+            {
+                question: "🇬🇧 What's this? '___' (book)",
+                options: ["It's a book", "This are a book", "These is book", "It book"],
+                answer: 1,
+                level: "Básico"
+            },
+            
+            // INTERMEDIÁRIO (8-14)
+            {
+                question: "🇬🇧 If I ___ you, I would study more.",
+                options: ["was", "were", "am", "is"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 She's been working here ___ 2010.",
+                options: ["for", "since", "from", "ago"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 By the time we arrived, they ___ dinner.",
+                options: ["already had", "had already had", "have already had", "already have"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 I wish I ___ taller.",
+                options: ["was", "were", "am", "is"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 The movie ___ by Spielberg.",
+                options: ["directed", "was directed", "directs", "is direct"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 She suggested ___ to the cinema.",
+                options: ["to go", "going", "go", "went"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            {
+                question: "🇬🇧 If he had studied, he ___ the test.",
+                options: ["would pass", "would have passed", "will pass", "passed"],
+                answer: 2,
+                level: "Intermediário"
+            },
+            
+            // AVANÇADO (15-20)
+            {
+                question: "🇬🇧 Never before ___ such a beautiful sunset.",
+                options: ["I have seen", "have I seen", "I saw", "did I see"],
+                answer: 2,
+                level: "Avançado"
+            },
+            {
+                question: "🇬🇧 Had I known, I ___ differently.",
+                options: ["would have acted", "would act", "will act", "acted"],
+                answer: 1,
+                level: "Avançado"
+            },
+            {
+                question: "🇬🇧 Not only ___ late, but she also forgot the documents.",
+                options: ["she arrived", "did she arrive", "arrived she", "she did arrive"],
+                answer: 2,
+                level: "Avançado"
+            },
+            {
+                question: "🇬🇧 The committee ___ in disagreement for weeks.",
+                options: ["has been", "have been", "is being", "are being"],
+                answer: 1,
+                level: "Avançado"
+            },
+            {
+                question: "🇬🇧 Were she to arrive early, we ___ the meeting.",
+                options: ["would start", "will start", "would have started", "start"],
+                answer: 1,
+                level: "Avançado"
+            },
+            {
+                question: "🇬🇧 Her writing is comparable ___ that of a professional author.",
+                options: ["with", "to", "as", "like"],
+                answer: 2,
+                level: "Avançado"
+            }
+        ];
 
-    function getLevel(currentIndex) {
-      if (currentIndex < 7) return "BÁSICO";
-      if (currentIndex < 14) return "INTERMEDIÁRIO";
-      return "AVANÇADO";
-    }
+        let current = 0;
+        let score = 0;
+        let answered = false;
+        let userAnswers = [];
+        let timer;
+        let timeLeft = 45;
 
-    function startTimer() {
-      clearInterval(timer);
-      timeLeft = 45;
-      updateTimerDisplay();
-      
-      timer = setInterval(() => {
-        timeLeft--;
-        updateTimerDisplay();
-        
-        if (timeLeft <= 0) {
-          clearInterval(timer);
-          if (!answered) {
-            userAnswers.push(0);
-            nextQuestion();
-          }
+        function getLevel(currentIndex) {
+            if (currentIndex < 7) return "BÁSICO";
+            if (currentIndex < 14) return "INTERMEDIÁRIO";
+            return "AVANÇADO";
         }
-      }, 1000);
-    }
 
-    function updateTimerDisplay() {
-      const timerEl = document.getElementById('timer');
-      if (timerEl) timerEl.textContent = `⏳ ${timeLeft}s`;
-    }
-
-    function showQuestion() {
-      answered = false;
-      const q = questions[current];
-      const currentLevel = getLevel(current);
-      
-      let html = `
-        <div class="quiz-header">
-          <div class="quiz-title">ENGLISH QUIZ</div>
-          <div class="level-indicator">${currentLevel}</div>
-        </div>
-        
-        <div class="timer-container">
-          <div class="timer" id="timer">⏳ 45s</div>
-        </div>
-        
-        <div class="question-area">
-          <div class="question-text">${q.question}</div>
-        </div>
-        
-        <div class="options-container" id="optionsContainer">
-      `;
-      
-      const letters = ['A', 'B', 'C', 'D'];
-      q.options.forEach((opt, i) => {
-        html += `
-          <button class="option-btn" onclick="selectOption(${i+1})">
-            <span class="option-prefix">${letters[i]}</span>
-            ${opt}
-          </button>
-        `;
-      });
-      
-      html += `</div>`;
-      
-      document.getElementById('quizContent').innerHTML = html;
-      startTimer();
-    }
-
-    function selectOption(selected) {
-      if (answered) return;
-      answered = true;
-      clearInterval(timer);
-      
-      const correct = questions[current].answer;
-      const buttons = document.querySelectorAll('.option-btn');
-      
-      buttons.forEach(b => b.classList.remove('selected', 'correct', 'incorrect'));
-      buttons[selected-1].classList.add('selected');
-      
-      setTimeout(() => {
-        buttons.forEach((btn, i) => {
-          if (i+1 === correct) {
-            btn.classList.add('correct');
-          } else if (i+1 === selected && selected !== correct) {
-            btn.classList.add('incorrect');
-          }
-          btn.disabled = true;
-        });
-        
-        userAnswers.push(selected);
-        if (selected === correct) {
-          score++;
-          confetti({ particleCount: 30, spread: 50, colors: ['#4169E1', '#ffd700'] });
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 45;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (!answered) {
+                        userAnswers.push(0);
+                        nextQuestion();
+                    }
+                }
+            }, 1000);
         }
-        
-        setTimeout(nextQuestion, 800);
-      }, 300);
-    }
 
-    function nextQuestion() {
-      current++;
-      if (current < questions.length) {
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer');
+            if (timerEl) timerEl.textContent = `⏳ ${timeLeft}s`;
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = questions[current];
+            const currentLevel = getLevel(current);
+            
+            let html = `
+                <div class="quiz-header">
+                    <div class="quiz-title">ENGLISH QUIZ</div>
+                    <div class="level-indicator">${currentLevel}</div>
+                </div>
+                
+                <div class="timer-container">
+                    <div class="timer" id="timer">⏳ 45s</div>
+                </div>
+                
+                <div class="question-area">
+                    <div class="question-text">${q.question}</div>
+                </div>
+                
+                <div class="options-container" id="optionsContainer">
+            `;
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            q.options.forEach((opt, i) => {
+                html += `
+                    <button class="option-btn" onclick="selectOption(${i+1})">
+                        <span class="option-prefix">${letters[i]}</span>
+                        ${opt}
+                    </button>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            document.getElementById('quizContent').innerHTML = html;
+            startTimer();
+        }
+
+        function selectOption(selected) {
+            if (answered) return;
+            answered = true;
+            clearInterval(timer);
+            
+            const correct = questions[current].answer;
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            buttons.forEach(b => b.classList.remove('selected', 'correct', 'incorrect'));
+            buttons[selected-1].classList.add('selected');
+            
+            setTimeout(() => {
+                buttons.forEach((btn, i) => {
+                    if (i+1 === correct) {
+                        btn.classList.add('correct');
+                    } else if (i+1 === selected && selected !== correct) {
+                        btn.classList.add('incorrect');
+                    }
+                    btn.disabled = true;
+                });
+                
+                userAnswers.push(selected);
+                if (selected === correct) {
+                    score++;
+                    confetti({
+                        particleCount: 30,
+                        spread: 50,
+                        colors: ['#3498db', '#f1c40f']
+                    });
+                }
+                
+                setTimeout(nextQuestion, 800);
+            }, 300);
+        }
+
+        function nextQuestion() {
+            current++;
+            if (current < questions.length) {
+                showQuestion();
+            } else {
+                showFinalScreen();
+            }
+        }
+
+        function showFinalScreen() {
+            let levelMessage = "";
+            let levelEmoji = "";
+            
+            if (score >= 15) {
+                levelMessage = "AVANÇADO - Excellent! 🌟";
+                levelEmoji = "🏆";
+                confetti({
+                    particleCount: 200,
+                    spread: 120,
+                    colors: ['#3498db', '#f1c40f']
+                });
+            } else if (score >= 8) {
+                levelMessage = "INTERMEDIÁRIO - Good job! 👍";
+                levelEmoji = "📚";
+                confetti({
+                    particleCount: 100,
+                    spread: 80,
+                    colors: ['#f1c40f']
+                });
+            } else {
+                levelMessage = "BÁSICO - Keep studying! 💪";
+                levelEmoji = "📝";
+            }
+            
+            let html = `
+                <div class="quiz-header">
+                    <div class="quiz-title">ENGLISH QUIZ</div>
+                </div>
+                
+                <div class="result-screen">
+                    <div class="final-score">
+                        <div class="score-label">Your Score</div>
+                        <div class="score-number">${score}/${questions.length}</div>
+                        <div class="level-result">${levelEmoji} ${levelMessage}</div>
+                    </div>
+                    
+                    <button class="action-btn" onclick="redirectToResultados()">
+                        🔗 VER RESULTADOS
+                    </button>
+                    
+                    <button class="action-btn secondary" onclick="redirectToShopee()">
+                        🚀 FAZER OUTRA ETAPA
+                    </button>
+                    
+                    <input type="text" class="name-input" id="participantName" 
+                           placeholder="Digite seu nome">
+                    <button class="action-btn secondary" onclick="sendResults()">
+                        💾 SALVAR RESULTADO
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('quizContent').innerHTML = html;
+        }
+
+        function redirectToResultados() {
+            window.open(RESULTADOS_LINK, '_blank');
+        }
+
+        function redirectToShopee() {
+            window.open(SHOPEE_LINK, '_blank');
+        }
+
+        function sendResults() {
+            const name = document.getElementById('participantName').value.trim();
+            if (!name) {
+                alert('Por favor, digite seu nome');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+                alert(`Thank you ${name}! Your score: ${score}/${questions.length}`);
+            }, 1000);
+        }
+
+        // Inicia o quiz
         showQuestion();
-      } else {
-        showFinalScreen();
-      }
-    }
-
-    function showFinalScreen() {
-      let levelMessage = "";
-      let levelEmoji = "";
-      
-      if (score >= 15) {
-        levelMessage = "AVANÇADO - Excellent! 🌟";
-        levelEmoji = "🏆";
-        confetti({ particleCount: 200, spread: 120, colors: ['#4169E1', '#ffd700'] });
-      } else if (score >= 8) {
-        levelMessage = "INTERMEDIÁRIO - Good job! 👍";
-        levelEmoji = "📚";
-        confetti({ particleCount: 100, spread: 80, colors: ['#ffd700'] });
-      } else {
-        levelMessage = "BÁSICO - Keep studying! 💪";
-        levelEmoji = "📝";
-      }
-      
-      let html = `
-        <div class="quiz-header">
-          <div class="quiz-title">ENGLISH QUIZ</div>
-        </div>
-        
-        <div class="result-screen">
-          <div class="final-score">
-            <div class="score-label">Your Score</div>
-            <div class="score-number">${score}/${questions.length}</div>
-            <div class="level-result">${levelEmoji} ${levelMessage}</div>
-          </div>
-          
-          <!-- BOTÃO VER RESULTADOS (redireciona para o link) -->
-          <button class="action-btn" onclick="redirectToResultados()">
-            🔗 VER RESULTADOS
-          </button>
-          
-          <!-- BOTÃO FAZER OUTRA ETAPA (redireciona para Shopee) -->
-          <button class="action-btn secondary" onclick="redirectToShopee()">
-            🚀 FAZER OUTRA ETAPA
-          </button>
-          
-          <!-- Campo para salvar nome (opcional) -->
-          <input type="text" class="name-input" id="participantName" 
-                 placeholder="Digite seu nome">
-          <button class="action-btn secondary" onclick="sendResults()">
-            💾 SALVAR RESULTADO
-          </button>
-        </div>
-      `;
-      
-      document.getElementById('quizContent').innerHTML = html;
-    }
-
-    // Redireciona para o site de resultados
-    function redirectToResultados() {
-      window.open(resultadosLink, '_blank');
-    }
-
-    // Redireciona para a Shopee (nova etapa)
-    function redirectToShopee() {
-      window.open(shopeeLink, '_blank');
-    }
-
-    // Função para salvar resultados (opcional)
-    function sendResults() {
-      const name = document.getElementById('participantName').value.trim();
-      if (!name) {
-        alert('Por favor, digite seu nome');
-        return;
-      }
-      
-      document.getElementById('loading').style.display = 'flex';
-      
-      setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        alert(`Thank you ${name}! Your score: ${score}/${questions.length}`);
-      }, 1000);
-    }
-
-    // Inicia o quiz
-    showQuestion();
-  </script>
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </body>
 </html>
